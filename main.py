@@ -3,13 +3,14 @@ found=False
 import random
 fun=lambda X:sum([(i+1)*pow(X[i],2) for i in range(len(X))])
 
-MUTATIONRATE=0.2
-CROSSOVERRATE=0.8
+
+CROSSOVERRATE=0.8               #Probability of each individual to mate
+MUTATIONRATE=0.2                #Probability of each gene to be mutated
 POPULATION_SIZE=1000
 
 LB=0
 UB=10
-GENES_PER_INDIVIDUAL=4
+GENES_PER_INDIVIDUAL=4  #Warning, always must be divisible by 2
 MUTATION_STEP_RANGE=0.05
 
 
@@ -107,14 +108,33 @@ def select(population):
     return selectedToReproduce
 
 def crossover(selectedParents):
-    return selectedParents
+
+
+
+    def _mate(male,female):
+        assert GENES_PER_INDIVIDUAL%2==0
+        return [male[:len(male)]+female[len(female):],male[len(male):]+female[:len(female)]]
+
+
+    if(len(selectedParents)%2!=0):selectedParents=selectedParents[:len(selectedParents)-1]          #Someone will get lonely
+    random.shuffle(selectedParents)
+    males = selectedParents[:int(len(selectedParents)/2)]                                           #Arbitary split half of them as males
+    females = selectedParents[int(len(selectedParents)/2):]                                         #And half of them as females
+    children=[]
+
+    for male,female in zip(males,females):
+        children.extend(_mate(male,female))
+
+    return children
 
 population= createPopulation(POPULATION_SIZE,LB,UB,GENES_PER_INDIVIDUAL)
 curr_generation=0
 while not found:
     #Evaluation
     so=sorted(population)
-    if(fitIndividual(so[0],fun)==0):found=True
+    if(fitIndividual(so[0],fun)==0):
+        found=True
+        break
     #Select
     selected=select(population)
 
@@ -129,6 +149,6 @@ while not found:
     population=survive(mutatedPopulation+population)
 
     curr_generation+=1
-    print str(curr_generation)+"Best-> "+str(so[0])+"With fit "+str(fitIndividual(so[0],fun)) +" -> "
+    print "Generation "+str(curr_generation)+" Best With fit "+str(fitIndividual(so[0],fun))
 
 
