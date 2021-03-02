@@ -43,7 +43,7 @@ def mutateGene(gene,mutationRate):
     Mutates all the genes(the numbers) of an individual (list of numbers) with a given mutationRate
 """
 def mutateIndividual(individual,mutationRate):
-    return [mutateGene(gene,mutationRate) for gene in individual]
+    return [round(mutateGene(gene,mutationRate),3) for gene in individual]
 
 """
     Applies the mutation to the whole population, returning the combined 2N population(parents and children)
@@ -64,10 +64,10 @@ def survive(population):
 """
 def sortByFitness(population):
     fitness = [(fitIndividual(i, fun), i) for i in population]      # Fitness,individual pair
-    fitSum = sum(map(lambda x: x[0], fitness))                      # Fitness sum
-    fitness = map(lambda x: (1 - x[0] / fitSum, x[1]), fitness)     # Reversed Percentage
-    revSum = sum(map(lambda x: x[0], fitness))                      # Reversed Percentage sum(to be normalized)
-    fitness = map(lambda x: (x[0] / revSum, x[1]), fitness)         # Normalized Reversed Percentage
+    fitSum = sum(map(lambda x: abs(x[0]), fitness))                      # Fitness sum
+    fitness = map(lambda x: (1 - abs(x[0]) / fitSum, x[1]), fitness)     # Reversed Percentage
+    revSum = sum(map(lambda x: abs(x[0]), fitness))                      # Reversed Percentage sum(to be normalized)
+    fitness = map(lambda x: (abs(x[0] / revSum), x[1]), fitness)         # Normalized Reversed Percentage
     best = sorted(fitness, key=lambda x: x[0], reverse=True)        # Sort most fitted first
 
     return best
@@ -192,6 +192,7 @@ if __name__ == '__main__':
         UB = int(sys.argv[sys.argv.index("-ub") + 1])
     if ("-lb" in sys.argv):
         LB = int(sys.argv[sys.argv.index("-lb") + 1])
+    assert LB<UB
 
 
     main(debug,present)
