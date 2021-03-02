@@ -1,9 +1,6 @@
 
-found=False
 import random
-fun=lambda X:sum([(i+1)*pow(X[i],2) for i in range(len(X))])
-
-
+import sys
 CROSSOVERRATE=0.8               #Probability of each individual to mate
 MUTATIONRATE=0.2                #Probability of each gene to be mutated
 POPULATION_SIZE=1000
@@ -12,14 +9,14 @@ LB=0
 UB=10
 GENES_PER_INDIVIDUAL=4  #Warning, always must be divisible by 2
 MUTATION_STEP_RANGE=0.05
-
+fun=lambda X:sum([(i+1)*pow(X[i],2) for i in range(len(X))])
 
 """
     Creates a list with GENES_PER_INDIVIDUAL numbers on range [LB,UB]
     This is called an 'Individual'
 """
 def createIndividual(lb,ub,n):
-    return [random.randint(lb,ub) for i in range(n)]
+    return [random.randint(lb,ub) for _ in range(n)]
 """
     Creates a list with Individuals
     this is called a 'Population'
@@ -76,7 +73,9 @@ def sortByFitness(population):
     return best
 
 
-
+"""
+    Performs Wheel Selection
+"""
 def select(population):
     """
         Takes a list of pairs (FITNESS_PERCENTAGE,INDIVIDUAL_VECTOR) and returns
@@ -107,6 +106,9 @@ def select(population):
         filter(lambda x:x[1]<CROSSOVERRATE,sortedWithDensitiesAndCrossovers))
     return selectedToReproduce
 
+"""
+    Performs mating on selected parents
+"""
 def crossover(selectedParents):
 
 
@@ -127,28 +129,69 @@ def crossover(selectedParents):
 
     return children
 
-population= createPopulation(POPULATION_SIZE,LB,UB,GENES_PER_INDIVIDUAL)
-curr_generation=0
-while not found:
-    #Evaluation
-    so=sorted(population)
-    if(fitIndividual(so[0],fun)==0):
-        found=True
-        break
-    #Select
-    selected=select(population)
-
-    #Crossover?
-    children=crossover(selected)
-
-
-
-    #Mutate
-    mutatedPopulation = mutatePopulaton(children, MUTATIONRATE)
-    #Survive
-    population=survive(mutatedPopulation+population)
-
-    curr_generation+=1
-    print "Generation "+str(curr_generation)+" Best With fit "+str(fitIndividual(so[0],fun))
+def presentResults(generations,optimal):
+    print "Optimal:"\
+          +str(optimal)+\
+          " after "\
+          +str(generations)+\
+          " Generations"\
+          +" with MR="\
+          +str(MUTATIONRATE)\
+          +", CR="\
+          +str(CROSSOVERRATE)\
+          +", POPULATION="\
+          +str(POPULATION_SIZE)\
+          +", UB="\
+          +str(UB)\
+          +", LB="\
+          +str(LB)
 
 
+def main(debug=False,present=False):
+    print('complete code for a continuous optimization problem:')
+    population= createPopulation(POPULATION_SIZE,LB,UB,GENES_PER_INDIVIDUAL)
+    curr_generation=0
+    found=False
+    while not found:
+        #Evaluation
+        so=sorted(population)
+        if(fitIndividual(so[0],fun)==0):
+            found=True
+            if(present):
+                presentResults(curr_generation,so[0])
+            break
+        #Select
+        selected=select(population)
+        #Crossover
+        children=crossover(selected)
+        #Mutate
+        mutatedPopulation = mutatePopulaton(children, MUTATIONRATE)
+        #Survive
+        population=survive(mutatedPopulation+population)
+        curr_generation+=1
+        if(debug):
+            print "Generation "+str(curr_generation)+" Best With fit "+str(fitIndividual(so[0],fun))+" - "+str(so[0])
+
+if __name__ == '__main__':
+    debug=False
+    present=False
+    if("-d" in sys.argv):
+        debug=True
+    if("-r" in sys.argv):
+        present=True
+    if("-mr" in sys.argv):
+        MUTATIONRATE=float(sys.argv[sys.argv.index("-mr")+1])
+        assert 0<=MUTATIONRATE<=1
+    if ("-cr" in sys.argv):
+        CROSSOVERRATE = float(sys.argv[sys.argv.index("-cr") + 1])
+        assert 0 <= CROSSOVERRATE <= 1
+    if ("-po" in sys.argv):
+        POPULATION_SIZE = int(sys.argv[sys.argv.index("-po") + 1])
+        assert POPULATION_SIZE>=0
+    if ("-ub" in sys.argv):
+        UB = int(sys.argv[sys.argv.index("-ub") + 1])
+    if ("-lb" in sys.argv):
+        LB = int(sys.argv[sys.argv.index("-lb") + 1])
+
+
+    main(debug,present)
