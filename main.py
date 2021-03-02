@@ -97,13 +97,6 @@ def select(population):
     """
     def _individualCrossoverProbabilityList(populationDensityPair):
         return map(lambda x:(x[0],random.uniform(0,1),x[1]),populationDensityPair)
-    """
-        Performs wheel select
-    """
-    def _weelSelect(populationWithDensities): #->Individual
-        randomProb=random.uniform(0,1)
-        picked=filter(lambda x:randomProb>x[0],populationWithDensities)[-1]
-        return picked
 
     sortedPopulation=sortByFitness(population)                                                              #Sorted population-fitness pairs
     sortedPopulationWithDensities=_densityFitnessList(sortedPopulation)                                     #fitness part now has the density up to this point (PDF)
@@ -127,6 +120,9 @@ while not found:
 
     #Crossover?
     children=crossover(selected)
+
+
+
     #Mutate
     mutatedPopulation = mutatePopulaton(children, MUTATIONRATE)
     #Survive
