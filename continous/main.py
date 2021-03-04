@@ -1,15 +1,27 @@
 
 import random
 import sys
+
+#Reasonable Defaults
 CROSSOVERRATE=0.8               #Probability of each individual to mate
 MUTATIONRATE=0.2                #Probability of each gene to be mutated
 POPULATION_SIZE=1000
-
 LB=0
 UB=10
 GENES_PER_INDIVIDUAL=4  #Warning, always must be divisible by 2
-MUTATION_STEP_RANGE=0.05
-fun=lambda X:sum([(i+1)*pow(X[i],2) for i in range(len(X))])
+MUTATION_STEP_RANGE=0.5
+
+#List of supported functions
+import math
+functions=[
+    ("mse","Mean Square Error",lambda X: sum([(i + 1) * pow(X[i], 2) for i in range(len(X))])),
+    ("sph","Sphere",lambda X: sum([pow(X[i], 2) for i in range(len(X))])),
+    ("lin","Linear",lambda X: sum(X[i] for i in range(len(X)))),
+    ("sin","Sinusoidal",lambda X: sum(math.sin(X[i]) for i in range(len(X)))),
+    ("abs","Absolute",lambda X: sum(abs(X[i]) for i in range(len(X)))),
+    ("ras","Rastrigin function",lambda X: len(X)*10+sum(pow(X[i],2)-10*math.cos(2*math.pi*X[i]) for i in range(len(X))))
+]
+
 
 """
     Creates a list with GENES_PER_INDIVIDUAL numbers on range [LB,UB]
@@ -53,16 +65,16 @@ def mutatePopulaton(population,mutationRate):
 """
     Sorts the given population by the fitness, and chooses the N best of them 
 """
-def survive(population):
+def survive(population,fun):
     sortedPopulation = map(
         lambda x: x[1],                         #Discard the fitness percentage, we only want the individuals
-        sortByFitness(population)
+        sortByFitness(population,fun)
     )
     return sortedPopulation[:POPULATION_SIZE]   #Survive the N Best individuals
 """
     Returns a pair of (FITNESS_PERCENTAGE,INDIVIDUAL_VECTOR) sorted by the first key
 """
-def sortByFitness(population):
+def sortByFitness(population,fun):
     fitness = [(fitIndividual(i, fun), i) for i in population]      # Fitness,individual pair
     fitSum = sum(map(lambda x: abs(x[0]), fitness))                      # Fitness sum
     fitness = map(lambda x: (1 - abs(x[0]) / fitSum, x[1]), fitness)     # Reversed Percentage
@@ -76,11 +88,10 @@ def sortByFitness(population):
 """
     Performs Wheel Selection
 """
-def select(population):
+def select(population,fun):
     """
         Takes a list of pairs (FITNESS_PERCENTAGE,INDIVIDUAL_VECTOR) and returns
                                         (FITNESS_PERCENTAGE_SO_FAR,INDIVIDUAL_VECTOR)
-
         for example
             [(0.5,[...]),(0.2,[...]),(0.3,[...])] -> [(0.5,[...]),(0.7,[...]),(1.0,[...])]
     """
@@ -97,8 +108,7 @@ def select(population):
     """
     def _individualCrossoverProbabilityList(populationDensityPair):
         return map(lambda x:(x[0],random.uniform(0,1),x[1]),populationDensityPair)
-
-    sortedPopulation=sortByFitness(population)                                                              #Sorted population-fitness pairs
+    sortedPopulation=sortByFitness(population,fun)                                                          #Sorted population-fitness pairs
     sortedPopulationWithDensities=_densityFitnessList(sortedPopulation)                                     #fitness part now has the density up to this point (PDF)
     sortedWithDensitiesAndCrossovers=_individualCrossoverProbabilityList(sortedPopulationWithDensities)     #now we have the individual crossover rates as well
     selectedToReproduce=map(                                                                                #Selected individuals to reproduce
@@ -118,8 +128,8 @@ def crossover(selectedParents):
         return [male[:len(male)]+female[len(female):],male[len(male):]+female[:len(female)]]
 
 
-    if(len(selectedParents)%2!=0):selectedParents=selectedParents[:len(selectedParents)-1]          #Someone will get lonely
-    random.shuffle(selectedParents)
+    if(len(selectedParents)%2!=0):selectedParents=selectedParents[:len(selectedParents)-1]          #Someone will get lonely, everyone must have pair
+    random.shuffle(selectedParents)                                                                 #Shuffling avoids the best to be mated always with the best
     males = selectedParents[:int(len(selectedParents)/2)]                                           #Arbitary split half of them as males
     females = selectedParents[int(len(selectedParents)/2):]                                         #And half of them as females
     children=[]
@@ -129,7 +139,7 @@ def crossover(selectedParents):
 
     return children
 
-def presentResults(generations,optimal):
+def presentResults(generations,optimal,functionDescriptor):
     print "Optimal:"\
           +str(optimal)+\
           " after "\
@@ -144,10 +154,14 @@ def presentResults(generations,optimal):
           +", UB="\
           +str(UB)\
           +", LB="\
-          +str(LB)
+          +str(LB)\
+          +", Function="\
+          +str(functionDescriptor[0])\
+          +", N="\
+          +str(GENES_PER_INDIVIDUAL)\
 
 
-def main(debug=False,present=False):
+def main(debug,present,functionDescriptor):
     print('complete code for a continuous optimization problem:')
     population= createPopulation(POPULATION_SIZE,LB,UB,GENES_PER_INDIVIDUAL)
     curr_generation=0
@@ -155,44 +169,54 @@ def main(debug=False,present=False):
     while not found:
         #Evaluation
         so=sorted(population)
-        if(fitIndividual(so[0],fun)==0):
+        if(fitIndividual(so[0],functionDescriptor[2])==0):
             found=True
             if(present):
-                presentResults(curr_generation,so[0])
+                presentResults(curr_generation,so[0],functionDescriptor)
             break
         #Select
-        selected=select(population)
+        selected=select(population,functionDescriptor[2])
         #Crossover
         children=crossover(selected)
         #Mutate
         mutatedPopulation = mutatePopulaton(children, MUTATIONRATE)
         #Survive
-        population=survive(mutatedPopulation+population)
+        population=survive(mutatedPopulation+population,functionDescriptor[2])
         curr_generation+=1
         if(debug):
-            print "Generation "+str(curr_generation)+" Best With fit "+str(fitIndividual(so[0],fun))+" - "+str(so[0])
+            print "Generation "+str(curr_generation)+" Best With fit "+str(fitIndividual(so[0],functionDescriptor[2]))+" - "+str(so[0])
+
 
 if __name__ == '__main__':
+#if(False):
     debug=False
     present=False
+    functionDescriptor=functions[0] #Default is Mean Square Error
     if("-d" in sys.argv):
         debug=True
     if("-r" in sys.argv):
         present=True
     if("-mr" in sys.argv):
         MUTATIONRATE=float(sys.argv[sys.argv.index("-mr")+1])
-        assert 0<=MUTATIONRATE<=1
+        assert 0<=MUTATIONRATE<=1,"Probability of crossover cannot be outsize of bounds [0(0% crossover) - 1(100% crossover)]"
     if ("-cr" in sys.argv):
         CROSSOVERRATE = float(sys.argv[sys.argv.index("-cr") + 1])
-        assert 0 <= CROSSOVERRATE <= 1
+        assert 0 <= CROSSOVERRATE <= 1,"Probability of crossover cannot be outsize of bounds [0(0% crossover) - 1(100% crossover)]"
     if ("-po" in sys.argv):
         POPULATION_SIZE = int(sys.argv[sys.argv.index("-po") + 1])
-        assert POPULATION_SIZE>=0
+        assert POPULATION_SIZE>0 ,"Population size cannot be <= 0"
     if ("-ub" in sys.argv):
         UB = int(sys.argv[sys.argv.index("-ub") + 1])
     if ("-lb" in sys.argv):
         LB = int(sys.argv[sys.argv.index("-lb") + 1])
-    assert LB<UB
+    if("-fn" in sys.argv):
+        choice=filter(lambda x:x[0]==sys.argv[sys.argv.index("-fn")+1],functions)
+        assert len(choice)==1, "No support for this type of function"
+        functionDescriptor=choice[0]
+    if("-dim" in sys.argv):
+        GENES_PER_INDIVIDUAL=int(sys.argv[sys.argv.index("-dim") + 1])
+
+    assert LB<UB ,"Lower bound cant be bigger that upper bound"
 
 
-    main(debug,present)
+    main(debug,present,functionDescriptor)
