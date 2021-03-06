@@ -75,102 +75,109 @@
 		Vestibulum ante ipsum primis in faucibus orci. 
 	\pagebreak
 	\section{Continous Optimisation}
-		\subsection{Task 1:Continous Code}
-			\begin{note}
-				Please find extensive documentation on how to run the following examples on /continous/README.md
-			\end{note}
+		\begin{note}
+			All the results for this section was produced with the following parameters
+			\begin{itemize}
+				\item N=4
+				\item Lower bound = -5
+				\item Upper bound = 5
+			\end{itemize}
+			No further mentions will be provided for those hyperparameters
+		\end{note}
 		\subsection{Subtask 1.C: Performance}
 			For the evaluation of the algorithm, we will use two standarized functions, 
 			\subsubsection{Sphrere}
-			the Sphere(Commondly known as $F_{1}$ in the literature\cite{performance}) contains a single minima and its considered a easily solveable function.
-			\begin{equation}
-			f(x)=\sum_{i=1}^{n}{x_{i}^2}
-			\end{equation}
+				the Sphere(Commondly known as $F_{1}$ in the literature\cite{performance}) contains a single minima and its considered a easily solveable function.
+				\begin{equation}
+				f(x)=\sum_{i=1}^{n}{x_{i}^2}
+				\end{equation}
 			\subsubsection{Rastrigin's function}
-			Rastrigin’s function(Commondly known as $F_{4}$ in the literature\cite{performance}), is considered a very difficult task due to its large number of local minima and its enormous search space.
-			\begin{equation}
-			f(x)=10\cdot n+\sum_{i=1}^{n}[x_{i}^{2}-10\cos(2\pi x_{i})]
-			\end{equation}
-			\subsubsection{Results}
-			We will evaluate against, Mutation and Crossover rates as well as population. 
-			The following results are the averages after 10 runs for each function, on 4 dimensions, using balanced selection and standard normal mutation distribution(see below).
-			\begin{figure}[H]
-				\centering
-				\begin{subfigure}{.5\textwidth}
-					\centering
-					\begin{center}
-						\begin{tabular}{||c c c||} 
-							\hline
-							MR & Avg F1 & Avg F4 \\ [0.5ex] 
-							\hline\hline
-							0.2 & 36 & 35 \\ 
-							\hline
-							0.4 & 96 & 104 \\
-							\hline
-							0.6 & 598 & 510 \\
-							\hline
-						\end{tabular}
-					\end{center}
-					\caption{Mutation rate (CR=0.8,Population size=10000)}
-					\label{fig:sub1}
-				\end{subfigure}%
-				\begin{subfigure}{.5\textwidth}
-					\centering
-					\begin{center}
-						\begin{tabular}{||c c c||} 
-							\hline
-							CR & Avg F1 & Avg F4 \\ [0.5ex] 
-							\hline\hline
-							0.2 & 125 & 127 \\ 
-							\hline
-							0.4 & 82 & 66 \\
-							\hline
-							0.6 & 53 & 42 \\
-							\hline
-							0.8 & 42 & 38 \\
-							\hline
-							1 & 30 & 29 \\
-							\hline
-						\end{tabular}
-					\end{center}
-					\caption{Crossover rate (MR=0.2,Population size=10000)}
-					\label{fig:sub2}
-				\end{subfigure}
-				\begin{subfigure}{.5\textwidth}
-					\centering
-					\begin{center}
-						\begin{tabular}{||c c c||} 
-							\hline
-							Population size & Avg F1 & Avg F4 \\ [0.5ex] 
-							\hline\hline
-							100 & 536 & 344 \\ 
-							\hline
-							1000 & 88 & 103 \\
-							\hline
-							10000 & 43 & 31 \\
-							\hline
-						\end{tabular}
-					\end{center}
-					\caption{Population size (MR=0.2,CR=0.8)}
-					\label{fig:sub2}
-				\end{subfigure}
-				\caption{Various hyperparameters and their respective affect on performance}
-				\label{fig:test}
-			\end{figure}
-			With the results in mind i can conclude the following 
-			\begin{itemize}
-				\item High mutation rate creates an oscillation effect around the minima, worsening the performance, 0.2 seems to be the best choice
-				\item Low crossover rate worsens the performance, as it enforces the algorithm to multuple extra generations to converge into the minima.
-				\item High population size seems to increase the performance\footnote{When the metric used is 'Number of generations'}
-			\end{itemize}
+				Rastrigin’s function(Commondly known as $F_{4}$ in the literature\cite{performance}), is considered a very difficult task due to its large number of local minima and its enormous search space.
+				\begin{equation}
+				f(x)=10\cdot n+\sum_{i=1}^{n}[x_{i}^{2}-10\cos(2\pi x_{i})]
+				\end{equation}
+			\subsubsection{Optimal hyperparameters}
+				We will evaluate against, Mutation and Crossover rates as well as population. 
+				The following results are the averages after 10 runs for each function, on 4 dimensions, using balanced selection and standard normal mutation distribution(see below).
+			\subsubsection{Performance Results}
+
+				\begin{note}
+					The following results was produced with the following hyperparameters and operators
+					\begin{itemize}
+						\item Population 1000
+						\item Crossover Rate 0.8
+						\item Mutation Rate 0.2
+						\item Elitistic Search(see next subsection)
+						\item Uniform mutation step(see next subsection)
+					\end{itemize}
+				\end{note}
+				
+				
+				
+				
+				
 		\subsection{Subtask 1.D, algorithm tuning}
 			\begin{itemize}
+				\item Balanced and Elitistic Wheel selection
 				\item Mutation distribution
-				\item Wheel and Elitistic selection
 			\end{itemize}
 			\subsubsection{Balanced and Elitistic selection}
-				The initial implementation of the selection operator, Involved a simple wheel selection based on the relative fitness of the individual on the current generation.
-				After some experimentation, this approach seemed 
+				The initial implementation of the selection operator, involved a balanced wheel selection based on the relative fitness of the individual on the current generation, as well as
+				an individual probability of each individual to mate. Using both metrics we determined if an individual was allowed to mate or not. This implementation allowed less ideal
+				candidates to mate with some probability, as this approach allowed the algorithm to avoid local minima traps easily. After some refinement this approach was ambandoned for a 
+				simpler elitistic wheel selection. In this selection strategy, the relative fitness is the only factor that affects an individuals probability to mate. The data below shows the 
+				improvement using the simpler method.
+			\subsubsection{Gaussian and Uniform mutation step}
+			The initial implementation of the mutation operator used a step taken from a Gaussian distribution with $\mu=0,\sigma=1$. The desired effect was to select a tiny step as a mutation operation the 
+			majority of the times, while leaving a small probability for a larger step, statistically this was used to avoid again, local minima. After some experimentation we improved our 
+			mutation operator by choosing a uniform distribution within the range [-1,1]. As the probability for a bigger step increases, we gain a significant performance boost when we have a relatively small
+			mutation probability.
+				\begin{note}
+					The following results was produced with the following hyperparameters
+					\begin{itemize}
+						\item Population 1000
+						\item Crossover Rate 0.8
+						\item Mutation Rate 0.2
+					\end{itemize}
+				\end{note}
+				\begin{figure}[H]
+					\centering
+					\begin{subfigure}{.5\textwidth}
+						\centering
+						\begin{center}
+							\begin{tabular}{||c c c||} 
+								\hline
+								  & Balanced & Elitistic \\ [0.5ex] 
+								\hline\hline
+								F1 & 124 & 98 \\ 
+								\hline
+								F4 & 107 & 87 \\
+								\hline
+							\end{tabular}
+						\end{center}
+						\caption{Balanced vs Elitistic(Gaussian Mutation)}
+						\label{fig:sub1}
+					\end{subfigure}%
+					\begin{subfigure}{.5\textwidth}
+						\centering
+						\begin{center}
+							\begin{tabular}{||c c c||} 
+								\hline
+								& Balanced & Elitistic \\ [0.5ex] 
+								\hline\hline
+								F1 & 133 & 90 \\ 
+								\hline
+								F4 & 94 & 67 \\
+								\hline
+							\end{tabular}
+						\end{center}
+						\caption{Balanced vs Elitistic(Uniform Mutation)}
+						\label{fig:sub2}
+					\end{subfigure}
+					\caption{A}
+					\label{fig:test}
+				\end{figure}
+				
 
 		
 		

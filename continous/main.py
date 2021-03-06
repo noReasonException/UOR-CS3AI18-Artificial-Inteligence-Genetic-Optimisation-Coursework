@@ -10,7 +10,7 @@ LB=0
 UB=10
 GENES_PER_INDIVIDUAL=4  #Warning, always must be divisible by 2
 MUTATION_STEP_RANGE=1
-
+RUN_TIMES_AVG=10
 #List of supported functions
 import math
 functions=[
@@ -64,7 +64,7 @@ def mutateGeneUniform(gene, mutationRate):
     Mutates all the genes(the numbers) of an individual (list of numbers) with a given mutationRate
 """
 def mutateIndividual(individual,mutationRate):
-    return [round(mutateGeneStandardNormal(gene, mutationRate), 3) for gene in individual]
+    return [round(mutateGeneUniform(gene, mutationRate), 3) for gene in individual]
 
 """
     Applies the mutation to the whole population, returning the combined 2N population(parents and children)
@@ -195,12 +195,12 @@ def presentResults(generations,optimal,functionDescriptor):
           +str(GENES_PER_INDIVIDUAL)\
 
 
-def main(debug,present,functionDescriptor,runIndex):
-    print('complete code for a continuous optimization problem:')
+def main(debug,present,functionDescriptor,runIndex,maxGen=250000):
+    #print('complete code for a continuous optimization problem:')
     population= createPopulation(POPULATION_SIZE,LB,UB,GENES_PER_INDIVIDUAL)
     curr_generation=0
     found=False
-    while not found:
+    while not found and curr_generation<maxGen:
         #Evaluation
         so=sorted(population)
         if(fitIndividual(so[0],functionDescriptor[2])==0):
@@ -209,7 +209,7 @@ def main(debug,present,functionDescriptor,runIndex):
                 presentResults(curr_generation,so[0],functionDescriptor)
             return curr_generation
         #Select
-        selected=balancedSelect(population, functionDescriptor[2])
+        selected=elitisticSelect(population, functionDescriptor[2])
         #Crossover
         children=crossover(selected)
         #Mutate
@@ -218,11 +218,11 @@ def main(debug,present,functionDescriptor,runIndex):
         population=survive(mutatedPopulation+population,functionDescriptor[2])
         curr_generation+=1
         if(debug):
-            print "["+str(runIndex)+"]Generation "+str(curr_generation)+" Best With fit "+str(fitIndividual(so[0],functionDescriptor[2]))+" - "+str(so[0])
+            print "[" + str(runIndex) + "]Generation " + str(curr_generation) + " Best With fit " + str(fitIndividual(so[0], functionDescriptor[2])) + " - " + str(so[0])
+    return curr_generation
 
 
 if __name__ == '__main__':
-#if(False):
     debug=False
     present=False
     functionDescriptor=functions[0] #Default is Mean Square Error
@@ -249,11 +249,39 @@ if __name__ == '__main__':
         functionDescriptor=choice[0]
     if("-dim" in sys.argv):
         GENES_PER_INDIVIDUAL=int(sys.argv[sys.argv.index("-dim") + 1])
+    if ("-rt" in sys.argv):
+        RUN_TIMES_AVG = int(sys.argv[sys.argv.index("-rt") + 1])
+        assert RUN_TIMES_AVG>0
+
+
 
     assert LB<UB ,"Lower bound cant be bigger that upper bound"
 
 
+    print "AVG("+str(RUN_TIMES_AVG)+")="+str(sum([main(debug,present,functionDescriptor,i) for i in range(RUN_TIMES_AVG)])/RUN_TIMES_AVG)
 
-    #main(debug,present,functionDescriptor)
-    avg=sum([main(debug,present,functionDescriptor,i) for i in range(10)])/10
-    print avg
+
+"""
+if __name__ == '__main__':
+#if(False):
+    debug=False
+    present=False
+    functionDescriptor=functions[-1] #Default is sph
+    UB = 5
+    LB = -5
+
+
+
+    MR=[0.2,0.4,0.6,0.8]
+    CR=[0.2,0.4,0.6,0.8]
+    POP=[10,20,30,40,50,60,70,80,90,100]
+    import itertools
+    for i in  itertools.product(MR,CR,POP):
+        MUTATIONRATE=i[0]
+        CROSSOVERRATE=i[1]
+        POPULATION_SIZE=i[2]
+        print "MR="+str(MUTATIONRATE)+" "\
+                "CR="+str(CROSSOVERRATE)+" "\
+                "POP="+str(POPULATION_SIZE)+" "\
+                "AVG="+str(sum([main(debug,present,functionDescriptor,i) for i in range(10)])/10)
+"""
