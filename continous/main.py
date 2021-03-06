@@ -1,7 +1,7 @@
 
 import random
 import sys
-
+import numpy
 #Reasonable Defaults
 CROSSOVERRATE=0.8               #Probability of each individual to mate
 MUTATIONRATE=0.2                #Probability of each gene to be mutated
@@ -9,7 +9,7 @@ POPULATION_SIZE=1000
 LB=0
 UB=10
 GENES_PER_INDIVIDUAL=4  #Warning, always must be divisible by 2
-MUTATION_STEP_RANGE=0.5
+MUTATION_STEP_RANGE=1
 
 #List of supported functions
 import math
@@ -44,9 +44,18 @@ def fitIndividual(individual,fun):
 
 
 """
-    Mutates a given gene with a probability determined by its second parameter
+    Mutates a given gene with a probability determined by its second parameter, with a standard normal distribution
 """
-def mutateGene(gene,mutationRate):
+def mutateGeneStandardNormal(gene, mutationRate):
+    prob=random.random()
+    if(prob<=mutationRate):
+        gene+=numpy.random.normal()#(-MUTATION_STEP_RANGE,MUTATION_STEP_RANGE)
+    return max(min(gene,UB),LB)
+"""
+    Mutates a given gene with a probability determined by its second parameter, with a uniform distribution, this
+    is expected to worsen the algorithms performance for very simple functions
+"""
+def mutateGeneUniform(gene, mutationRate):
     prob=random.random()
     if(prob<=mutationRate):
         gene+=random.uniform(-MUTATION_STEP_RANGE,MUTATION_STEP_RANGE)
@@ -55,7 +64,7 @@ def mutateGene(gene,mutationRate):
     Mutates all the genes(the numbers) of an individual (list of numbers) with a given mutationRate
 """
 def mutateIndividual(individual,mutationRate):
-    return [round(mutateGene(gene,mutationRate),3) for gene in individual]
+    return [round(mutateGeneStandardNormal(gene, mutationRate), 3) for gene in individual]
 
 """
     Applies the mutation to the whole population, returning the combined 2N population(parents and children)
@@ -86,9 +95,10 @@ def sortByFitness(population,fun):
 
 
 """
-    Performs Wheel Selection
+    Performs Wheel Selection with balance probability, this will exclude some individuals with high fitness score to allow 
+    non-so-good ones to reproduce. This mechanism will help the algorithm to avoid stucking in local minima for too long
 """
-def select(population,fun):
+def balancedSelect(population, fun):
     """
         Takes a list of pairs (FITNESS_PERCENTAGE,INDIVIDUAL_VECTOR) and returns
                                         (FITNESS_PERCENTAGE_SO_FAR,INDIVIDUAL_VECTOR)
@@ -115,7 +125,31 @@ def select(population,fun):
         lambda x:x[2],
         filter(lambda x:x[1]<CROSSOVERRATE,sortedWithDensitiesAndCrossovers))
     return selectedToReproduce
+"""
+    Performs Wheel Selection without balanced probability, this will just perform wheel selection based on fitness score
+    This is expected to undermine the algorithms performance
+    NOTESTED
+"""
+def elitisticSelect(population, fun):
+    """
+        Takes a list of pairs (FITNESS_PERCENTAGE,INDIVIDUAL_VECTOR) and returns
+                                        (FITNESS_PERCENTAGE_SO_FAR,INDIVIDUAL_VECTOR)
+        for example
+            [(0.5,[...]),(0.2,[...]),(0.3,[...])] -> [(0.5,[...]),(0.7,[...]),(1.0,[...])]
+    """
+    def _densityFitnessList(populationDensityPair):
+        acc = 0
+        for i in range(len(populationDensityPair)):
+            acc += populationDensityPair[i][0]
+            populationDensityPair[i] = (acc, populationDensityPair[i][1])
+        return populationDensityPair
 
+    sortedPopulation=sortByFitness(population,fun)                                                          #Sorted population-fitness pairs
+    sortedPopulationWithDensities=_densityFitnessList(sortedPopulation)                                     #fitness part now has the density up to this point (PDF)
+    selectedToReproduce=map(                                                                                #Selected individuals to reproduce
+        lambda x:x[1],
+        filter(lambda x:x[0]<CROSSOVERRATE,sortedPopulationWithDensities))
+    return selectedToReproduce
 """
     Performs mating on selected parents
 """
@@ -161,7 +195,7 @@ def presentResults(generations,optimal,functionDescriptor):
           +str(GENES_PER_INDIVIDUAL)\
 
 
-def main(debug,present,functionDescriptor):
+def main(debug,present,functionDescriptor,runIndex):
     print('complete code for a continuous optimization problem:')
     population= createPopulation(POPULATION_SIZE,LB,UB,GENES_PER_INDIVIDUAL)
     curr_generation=0
@@ -173,9 +207,9 @@ def main(debug,present,functionDescriptor):
             found=True
             if(present):
                 presentResults(curr_generation,so[0],functionDescriptor)
-            break
+            return curr_generation
         #Select
-        selected=select(population,functionDescriptor[2])
+        selected=balancedSelect(population, functionDescriptor[2])
         #Crossover
         children=crossover(selected)
         #Mutate
@@ -184,7 +218,7 @@ def main(debug,present,functionDescriptor):
         population=survive(mutatedPopulation+population,functionDescriptor[2])
         curr_generation+=1
         if(debug):
-            print "Generation "+str(curr_generation)+" Best With fit "+str(fitIndividual(so[0],functionDescriptor[2]))+" - "+str(so[0])
+            print "["+str(runIndex)+"]Generation "+str(curr_generation)+" Best With fit "+str(fitIndividual(so[0],functionDescriptor[2]))+" - "+str(so[0])
 
 
 if __name__ == '__main__':
@@ -219,4 +253,7 @@ if __name__ == '__main__':
     assert LB<UB ,"Lower bound cant be bigger that upper bound"
 
 
-    main(debug,present,functionDescriptor)
+
+    #main(debug,present,functionDescriptor)
+    avg=sum([main(debug,present,functionDescriptor,i) for i in range(10)])/10
+    print avg
