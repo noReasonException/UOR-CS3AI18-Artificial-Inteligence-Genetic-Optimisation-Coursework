@@ -1,0 +1,190 @@
+\documentclass[openany]{article}
+
+
+%Standard Stefanos Packages
+\usepackage[utf8]{inputenc}
+\usepackage{dirtytalk}
+\usepackage{amsmath}
+\usepackage{mathtools}  
+\mathtoolsset{showonlyrefs} 
+\usepackage{graphicx}
+\usepackage{mdframed}
+\usepackage{lipsum}
+\usepackage{cancel}
+\usepackage{systeme}
+\usepackage{pgfplots}
+\usepackage{textcomp}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{tikz-cd}
+\usetikzlibrary{arrows}
+\geometry{a4paper}
+\graphicspath{ {./res/} }
+\usepackage{float}
+\restylefloat{table}
+\newcommand{\comment}[1]{%
+	\text{\phantom{(#1)}} \tag{#1}
+}
+ \title{\line(3,0){250}\\Artificial Intelligence \\ Genetic Algorithms Coursework  \\\line(3,0){250}}
+\usepackage{pgfplots}
+\newmdtheoremenv{note}{Note}
+\pgfplotsset{compat=1.17}
+
+\newmdtheoremenv{definition}{Definition}
+
+%Extra Packages
+\usepackage{tikz}
+\usetikzlibrary{automata,positioning}
+
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+%Additional Packages
+\usepackage{listings}
+\usepackage{subcaption}
+\lstdefinestyle{myScalastyle}{
+	frame=tb,
+	language=scala,
+	aboveskip=3mm,
+	belowskip=3mm,
+	showstringspaces=false,
+	columns=flexible,
+	basicstyle={\small\ttfamily},
+	numbers=none,
+	numberstyle=\tiny\color{gray},
+	keywordstyle=\color{blue},
+	commentstyle=\color{dkgreen},
+	stringstyle=\color{mauve},
+	frame=single,
+	breaklines=true,
+	breakatwhitespace=true,
+	tabsize=3,
+}
+\begin{document}
+	\maketitle
+	\pagebreak
+	\section{Abstract}
+		Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus vitae bibendum risus. Vestibulum mattis dui eros, 
+		eu tristique orci egestas eu. Maecenas hendrerit mi eget nulla malesuada hendrerit. Praesent egestas dui eget ipsum fringilla, 
+		vitae sagittis urna varius. In hac habitasse platea dictumst. In nec magna tellus. Nullam tempus rutrum lectus, nec ornare urna 
+		posuere non. Praesent nec arcu tristique nisi elementum luctus nec quis lorem. Cras ullamcorper urna vitae volutpat euismod. Nunc 
+		tincidunt lorem et augue interdum sodales. Quisque erat mi, viverra ut quam a, rutrum ornare mi. Donec eget sagittis metus. 
+		Vestibulum ante ipsum primis in faucibus orci. 
+	\pagebreak
+	\section{Continous Optimisation}
+		\subsection{Task 1:Continous Code}
+			\begin{note}
+				Please find extensive documentation on how to run the following examples on /continous/README.md
+			\end{note}
+		\subsection{Subtask 1.C: Performance}
+			For the evaluation of the algorithm, we will use two standarized functions, 
+			\subsubsection{Sphrere}
+			the Sphere(Commondly known as $F_{1}$ in the literature\cite{performance}) contains a single minima and its considered a easily solveable function.
+			\begin{equation}
+			f(x)=\sum_{i=1}^{n}{x_{i}^2}
+			\end{equation}
+			\subsubsection{Rastrigin's function}
+			Rastrigin’s function(Commondly known as $F_{4}$ in the literature\cite{performance}), is considered a very difficult task due to its large number of local minima and its enormous search space.
+			\begin{equation}
+			f(x)=10\cdot n+\sum_{i=1}^{n}[x_{i}^{2}-10\cos(2\pi x_{i})]
+			\end{equation}
+			\subsubsection{Results}
+			We will evaluate against, Mutation and Crossover rates as well as population. 
+			The following results are the averages after 10 runs for each function, on 4 dimensions, using balanced selection and standard normal mutation distribution(see below).
+			\begin{figure}[H]
+				\centering
+				\begin{subfigure}{.5\textwidth}
+					\centering
+					\begin{center}
+						\begin{tabular}{||c c c||} 
+							\hline
+							MR & Avg F1 & Avg F4 \\ [0.5ex] 
+							\hline\hline
+							0.2 & 36 & 35 \\ 
+							\hline
+							0.4 & 96 & 104 \\
+							\hline
+							0.6 & 598 & 510 \\
+							\hline
+						\end{tabular}
+					\end{center}
+					\caption{Mutation rate (CR=0.8,Population size=10000)}
+					\label{fig:sub1}
+				\end{subfigure}%
+				\begin{subfigure}{.5\textwidth}
+					\centering
+					\begin{center}
+						\begin{tabular}{||c c c||} 
+							\hline
+							CR & Avg F1 & Avg F4 \\ [0.5ex] 
+							\hline\hline
+							0.2 & 125 & 127 \\ 
+							\hline
+							0.4 & 82 & 66 \\
+							\hline
+							0.6 & 53 & 42 \\
+							\hline
+							0.8 & 42 & 38 \\
+							\hline
+							1 & 30 & 29 \\
+							\hline
+						\end{tabular}
+					\end{center}
+					\caption{Crossover rate (MR=0.2,Population size=10000)}
+					\label{fig:sub2}
+				\end{subfigure}
+				\begin{subfigure}{.5\textwidth}
+					\centering
+					\begin{center}
+						\begin{tabular}{||c c c||} 
+							\hline
+							Population size & Avg F1 & Avg F4 \\ [0.5ex] 
+							\hline\hline
+							100 & 536 & 344 \\ 
+							\hline
+							1000 & 88 & 103 \\
+							\hline
+							10000 & 43 & 31 \\
+							\hline
+						\end{tabular}
+					\end{center}
+					\caption{Population size (MR=0.2,CR=0.8)}
+					\label{fig:sub2}
+				\end{subfigure}
+				\caption{Various hyperparameters and their respective affect on performance}
+				\label{fig:test}
+			\end{figure}
+			With the results in mind i can conclude the following 
+			\begin{itemize}
+				\item High mutation rate creates an oscillation effect around the minima, worsening the performance, 0.2 seems to be the best choice
+				\item Low crossover rate worsens the performance, as it enforces the algorithm to multuple extra generations to converge into the minima.
+				\item High population size seems to increase the performance\footnote{When the metric used is 'Number of generations'}
+			\end{itemize}
+		\subsection{Subtask 1.D, algorithm tuning}
+			\begin{itemize}
+				\item Mutation distribution
+				\item Wheel and Elitistic selection
+			\end{itemize}
+			\subsubsection{Balanced and Elitistic selection}
+				The initial implementation of the selection operator, Involved a simple wheel selection based on the relative fitness of the individual on the current generation.
+				After some experimentation, this approach seemed 
+
+		
+		
+		
+\begin{thebibliography}{1}	
+	\bibitem{wheel-selection}
+	\textit{Bäck, Thomas, Evolutionary Algorithms in Theory and Practice (1996), p. 120, Oxford Univ. Press}
+	
+	\bibitem{holland-1975}
+	\textit{Holland J.H. (1984) Genetic Algorithms and Adaptation. In: Selfridge O.G., Rissland E.L., Arbib M.A. (eds) Adaptive Control of Ill-Defined Systems. NATO Conference Series (II Systems Science), vol 16. Springer, Boston, MA. https://doi.org/10.1007/978-1-4684-8941-5\_21}
+	
+	\bibitem{performance}
+	\textit{Carvalho, D. B. et al. “The Simple Genetic Algorithm Performance: A Comparative Study on the Operators Combination.” (2011).}
+	
+\end{thebibliography}
+			
+\end{document}
