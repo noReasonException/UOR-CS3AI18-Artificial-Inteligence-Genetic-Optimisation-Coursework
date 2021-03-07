@@ -1,34 +1,3 @@
-
-import random
-import sys
-import numpy
-#Reasonable Defaults
-CROSSOVERRATE=0.8               #Probability of each individual to mate
-MUTATIONRATE=0.2                #Probability of each gene to be mutated
-POPULATION_SIZE=1000
-LB=0
-UB=10
-GENES_PER_INDIVIDUAL=4  #Warning, always must be divisible by 2
-MUTATION_STEP_RANGE=1
-RUN_TIMES_AVG=1
-#List of supported functions
-import math
-functions=[
-    ("mse","Mean Square Error",lambda X: sum([(i + 1) * pow(X[i], 2) for i in range(len(X))])),
-    ("sph","Sphere",lambda X: sum([pow(X[i], 2) for i in range(len(X))])),
-    ("lin","Linear",lambda X: sum(X[i] for i in range(len(X)))),
-    ("sin","Sinusoidal",lambda X: sum(math.sin(X[i]) for i in range(len(X)))),
-    ("abs","Absolute",lambda X: sum(abs(X[i]) for i in range(len(X)))),
-    ("ras","Rastrigin function",lambda X: len(X)*10+sum(pow(X[i],2)-10*math.cos(2*math.pi*X[i]) for i in range(len(X))))
-]
-
-
-"""
-    Creates a list with GENES_PER_INDIVIDUAL numbers on range [LB,UB]
-    This is called an 'Individual'
-"""
-def createIndividual(lb,ub,n):
-    return [random.randint(lb,ub) for _ in range(n)]
 """
     Creates a list with Individuals
     this is called a 'Population'
@@ -72,7 +41,7 @@ def mutateIndividual(individual,mutationRate):
 def mutatePopulaton(population,mutationRate):
     return [mutateIndividual(individual,mutationRate) for individual in population]
 """
-    Sorts the given population by the fitness, and chooses the N best of them 
+    Sorts the given population by the fitness, and chooses the N best of them
 """
 def survive(population,fun):
     sortedPopulation = map(
@@ -95,7 +64,7 @@ def sortByFitness(population,fun):
 
 
 """
-    Performs Wheel Selection with balance probability, this will exclude some individuals with high fitness score to allow 
+    Performs Wheel Selection with balance probability, this will exclude some individuals with high fitness score to allow
     non-so-good ones to reproduce. This mechanism will help the algorithm to avoid stucking in local minima for too long
 """
 def balancedSelect(population, fun):

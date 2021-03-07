@@ -24,7 +24,7 @@ functions=[
 
 
 """
-    Creates a list with GENES_PER_INDIVIDUAL numbers on range [LB,UB]
+    Creates a list with n numbers on range [LB,UB]
     This is called an 'Individual'
 """
 def createIndividual(lb,ub,n):
@@ -128,7 +128,7 @@ def balancedSelect(population, fun):
 """
     Performs Wheel Selection without balanced probability, this will just perform wheel selection based on fitness score
     This is expected to undermine the algorithms performance
-    NOTESTED
+    
 """
 def elitisticSelect(population, fun):
     """
@@ -238,7 +238,7 @@ if __name__ == '__main__':
         assert 0 <= CROSSOVERRATE <= 1,"Probability of crossover cannot be outsize of bounds [0(0% crossover) - 1(100% crossover)]"
     if ("-po" in sys.argv):
         POPULATION_SIZE = int(sys.argv[sys.argv.index("-po") + 1])
-        assert POPULATION_SIZE>0 ,"Population size cannot be <= 0"
+        assert POPULATION_SIZE>=10 ,"Population size cannot be < 10"
     if ("-ub" in sys.argv):
         UB = int(sys.argv[sys.argv.index("-ub") + 1])
     if ("-lb" in sys.argv):
