@@ -15,8 +15,8 @@ GENES_PER_INDIVIDUAL=4  #Warning, always must be divisible by 2
 RUN_TIMES_AVG=1
 #Supported functions
 functions=[
-    ("sum1min","Sum of ones",[0,1],lambda X: len(filter(lambda i:i==1,X)),lambda n:[0]*n),
-    ("sum1max", "Sum of ones", [0, 1], lambda X: len(filter(lambda i: i == 1, X)), lambda n: [1] * n)
+    ("sum1min","Sum of ones minimised",[0,1],lambda X: len(filter(lambda i:i==1,X)),lambda n:[0]*n),
+    ("sum1max", "Sum of ones maximised", [0, 1], lambda X: len(filter(lambda i: i == 1, X)), lambda n: [1] * n)
 ]
 #Positions on supported functions
 FCODE=0
@@ -40,21 +40,24 @@ def createPopulation(populationSize,functionDescriptor):
     return [createIndividual(functionDescriptor[FSYMBOLS]) for _ in range(populationSize)]
 """
     How well the Individual fits within the given function?
-    
-    This produces a score, we use this score to calculate the relative fitness and determine selection
+    This function returns a score equal with the number of equal genes between the individual and the target
 """
-
-
 def fitIndividual(individual,functionDescriptor):
     target=functionDescriptor[FGENERATETARGET](GENES_PER_INDIVIDUAL)
     score=sum(map(lambda x:1 if x[0]==x[1] else 0 ,zip(target,individual)))
     return score
-
+"""
+    How well the Individual fits within the given function?
+    This function returns a score equal with the number of differences between the individual and the target
+"""
 def diffsFromTarget(individual,functionDescriptor):
     target=functionDescriptor[FGENERATETARGET](GENES_PER_INDIVIDUAL)
     score=sum(map(lambda x:1 if x[0]!=x[1] else 0 ,zip(target,individual)))
     return score
-
+"""
+    returns a 2D list, each element of the form (FITNESS_SCORE,INDIVIDUAL). 
+    The fitness score is relative to the population and is calculated using the fitIndividual function
+"""
 def sortByFitness(population,functionDescriptor):
     fitness = [(fitIndividual(i,functionDescriptor), i) for i in population]        #Fitness,individual pair
     fitMax = sum(map(lambda x: abs(x[0]), fitness))                                 #Fitness max score
@@ -144,7 +147,6 @@ def crossover(selectedParents):
 
     for male,female in zip(males,females):
         children.extend(_mate(male,female))
-    assert len(children)!=0
     return children
 def main(debug,present,functionDescriptor,runIndex,maxGen=250000):
     print('complete code for a discrete optimization problem:')
