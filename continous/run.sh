@@ -1,1 +1,0 @@
-python2.7 main.py -r -d -mr $1 -cr $2 -po 100 -ub 5 -lb -5 -dim 4 -fn ras

@@ -10,7 +10,7 @@ LB=0
 UB=10
 GENES_PER_INDIVIDUAL=4  #Warning, always must be divisible by 2
 MUTATION_STEP_RANGE=1
-RUN_TIMES_AVG=10
+RUN_TIMES_AVG=1
 #List of supported functions
 import math
 functions=[
@@ -196,7 +196,7 @@ def presentResults(generations,optimal,functionDescriptor):
 
 
 def main(debug,present,functionDescriptor,runIndex,maxGen=250000):
-    #print('complete code for a continuous optimization problem:')
+    print('complete code for a continuous optimization problem:')
     population= createPopulation(POPULATION_SIZE,LB,UB,GENES_PER_INDIVIDUAL)
     curr_generation=0
     found=False
@@ -259,7 +259,6 @@ if __name__ == '__main__':
 
 
     print "AVG("+str(RUN_TIMES_AVG)+")="+str(sum([main(debug,present,functionDescriptor,i) for i in range(RUN_TIMES_AVG)])/RUN_TIMES_AVG)
-
 
 """
 if __name__ == '__main__':
