@@ -28,10 +28,8 @@
  \title{\line(3,0){250}\\Artificial Intelligence \\ Genetic Algorithms Coursework  \\\line(3,0){250}}
 \usepackage{pgfplots}
 \newmdtheoremenv{note}{Note}
-\pgfplotsset{compat=1.17}
-
 \newmdtheoremenv{definition}{Definition}
-
+\pgfplotsset{compat=1.17}
 %Extra Packages
 \usepackage{tikz}
 \usetikzlibrary{automata,positioning}
@@ -76,62 +74,137 @@
 	\pagebreak
 	\section{Continous Optimisation}
 		\begin{note}
-			All the results for this section was produced with the following parameters
+			All the results for this section were produced with the following parameters.
 			\begin{itemize}
 				\item N=4
 				\item Lower bound = -5
 				\item Upper bound = 5
 			\end{itemize}
-			No further mentions will be provided for those hyperparameters
+			No further mentions will be provided for those hyperparameters.
 		\end{note}
 		\subsection{Subtask 1.C: Performance}
-			For the evaluation of the algorithm, we will use two standarized functions, 
+			For our algorithm evaluation, we will use two classic optimization testing functions, F1 and F4.
 			\subsubsection{Sphrere}
-				the Sphere(Commondly known as $F_{1}$ in the literature\cite{performance}) contains a single minima and its considered a easily solveable function.
+				The Sphere(Commonly known as $F_{1}$ in the literature\cite{performance}) contains a single minimum and is considered an easily solvable function.
 				\begin{equation}
-				f(x)=\sum_{i=1}^{n}{x_{i}^2}
+				F_1(X)=\sum_{i=1}^{n}{x_{i}^2}
 				\end{equation}
 			\subsubsection{Rastrigin's function}
-				Rastrigin’s function(Commondly known as $F_{4}$ in the literature\cite{performance}), is considered a very difficult task due to its large number of local minima and its enormous search space.
+				Rastrigin’s function(Commonly known as $F_{4}$ in the literature\cite{performance}) is considered a challenging task due to its large number of local minima and its enormous search space.
 				\begin{equation}
-				f(x)=10\cdot n+\sum_{i=1}^{n}[x_{i}^{2}-10\cos(2\pi x_{i})]
+				F_4(X)=10\cdot n+\sum_{i=1}^{n}[x_{i}^{2}-10\cos(2\pi x_{i})]
 				\end{equation}
 			\subsubsection{Optimal hyperparameters}
-				We will evaluate against, Mutation and Crossover rates as well as population. 
-				The following results are the averages after 10 runs for each function, on 4 dimensions, using balanced selection and standard normal mutation distribution(see below).
+				Before evaluating our algorithm's performance, we should first find the optimal hyperparameters for solving our test functions.
+				We need to evaluate the following 3 variables and their affect on the algorithms performance.
+				\begin{itemize}
+					\item Mutation Rate(MR)
+					\item Crossover Rate(CR)
+					\item Population Size(PO)
+				\end{itemize}
+				We will use the following unbiased metric for measuring the objective performance for a given function($F_1$ or $F_4$) applied on the giver parameters (MR, CR, PO).
+				\pagebreak
+				\begin{definition}
+					We define the following metric called 'Normalized Performance for function $F_{x}$'\footnote{We assume that the calculation of a single individual takes constant time (O(1))}
+					\begin{equation}
+						NF_{x}=1-\frac{g\cdot PO}{G\cdot max(PO)},\space 0\le NF_{x}\le 1
+					\end{equation}
+					Where the $g$ is the average number of generations untill the solution is found after 10 simulations, for a given MR,CR,PO on a given function $F_{x}$, $G$ is
+					the maximum number of generations allowed and $max(PO)$\footnote{We multiply PO and max(PO) here, as can be proven that, without accounting the population size, our metric is biased} is the maximum population size allowed.
+				\end{definition}
+				\begin{figure}[H]
+					\centering
+					\begin{subfigure}{.5\textwidth}
+						\centering
+						\begin{center}
+							\begin{figure}[H]
+								\iftrue
+								\includegraphics[scale=0.2]{res/hyperF1}
+								\fi
+							\end{figure}
+						\end{center}
+						\caption{Performance for $F_1$}
+						\label{fig:sub1}
+					\end{subfigure}%
+					\begin{subfigure}{.5\textwidth}
+						\centering
+						\begin{center}
+							\begin{figure}[H]
+								\iftrue
+								\includegraphics[scale=0.2]{res/hyperF4}
+								\fi
+							\end{figure}
+						\end{center}
+						\caption{Performance for $F_4$}
+						\label{fig:sub2}
+					\end{subfigure}
+					\caption{Performance for 160 simulations per function}
+					\label{fig:test}
+				\end{figure}
+				By visualizing the results, we can see that we get a very consistent performance by using the following hyperparameters.
+				\begin{figure}[H]
+					\centering
+					\begin{center}
+						\begin{tabular}{||c c c||} 
+							\hline
+							& Lower Bound & Higher Bound \\ [0.5ex] 
+							\hline\hline
+							MR & 0.2 & 0.4 \\ 
+							\hline
+							CR & 0.6 & 0.8 \\ 
+							\hline
+							PO & 80 & - \\ 
+							\hline
+						\end{tabular}
+					\end{center}
+					\caption{Optimal hyperparameters}
+					\label{fig:sub1}
+				\end{figure}
+				\pagebreak
 			\subsubsection{Performance Results}
-
-				\begin{note}
-					The following results was produced with the following hyperparameters and operators
-					\begin{itemize}
-						\item Population 1000
-						\item Crossover Rate 0.8
-						\item Mutation Rate 0.2
-						\item Elitistic Search(see next subsection)
-						\item Uniform mutation step(see next subsection)
-					\end{itemize}
-				\end{note}
+				Using the optimal hyperparameters, as well as our optimal select and mutate operators (see \ref{tuning})
+				\begin{figure}[H]
+					\iftrue
+					\centering
+					\includegraphics[scale=0.4]{res/perfF1F4}
+					\fi
+				\end{figure}
+				We can see that the algorithm converges close enough to the global minima of each function in the first few generations, then it spends 
+				the majority of its time oscillating around the desired result. This can be solved using more sophisticated mutation and crossover operators
+				that are outside of the scope of this coursework.
+				
 				
 				
 				
 				
 				
 		\subsection{Subtask 1.D, algorithm tuning}
+			\label{tuning}
+			The initial version of the algorithm was improved in the following 2 areas
 			\begin{itemize}
-				\item Balanced and Elitistic Wheel selection
-				\item Mutation distribution
+				\item Balanced and Elitistic selection operator
+				\item Mutation step distribution
 			\end{itemize}
 			\subsubsection{Balanced and Elitistic selection}
-				The initial implementation of the selection operator, involved a balanced wheel selection based on the relative fitness of the individual on the current generation, as well as
-				an individual probability of each individual to mate. Using both metrics we determined if an individual was allowed to mate or not. This implementation allowed less ideal
-				candidates to mate with some probability, as this approach allowed the algorithm to avoid local minima traps easily. After some refinement this approach was ambandoned for a 
-				simpler elitistic wheel selection. In this selection strategy, the relative fitness is the only factor that affects an individuals probability to mate. The data below shows the 
-				improvement using the simpler method.
-			\subsubsection{Gaussian and Uniform mutation step}
-			The initial implementation of the mutation operator used a step taken from a Gaussian distribution with $\mu=0,\sigma=1$. The desired effect was to select a tiny step as a mutation operation the 
-			majority of the times, while leaving a small probability for a larger step, statistically this was used to avoid again, local minima. After some experimentation we improved our 
-			mutation operator by choosing a uniform distribution within the range [-1,1]. As the probability for a bigger step increases, we gain a significant performance boost when we have a relatively small
-			mutation probability.
+				The initial implementation of the selection operator involved a balanced wheel selection based on the relative fitness of the individual on the current generation, as well as
+				an individual probability of each individual to mate. Using both metrics, we determined if an individual was allowed to mate or not. This implementation allowed less ideal
+				candidates for mating with some probability, as this approach allowed the algorithm to avoid local minima traps efficiently. After some refinement, this approach was abandoned for a 
+				more straightforward elitistic wheel selection. In this selection strategy, relative fitness is the only factor that affects an individual's probability to mate. The data below shows the 
+				improvement using the more straightforward method.
+				\subsubsection{Gaussian and Uniform mutation step}
+				The mutation operator's initial implementation used a step taken from a Gaussian distribution with $\mu=0,\sigma=1$. 
+				The desired effect was to select a tiny step as a mutation operation most of the time while leaving a small probability for a 
+				more significant step to avoid local minima in case of a stuck. The performance analysis showed that the gaussian mutation operator
+				was not 'wide' enough, and the algorithm spent an enormous time stuck on local minima. This was improved significantly by choosing 
+				a uniform distribution within the range [-1,1]. As the probability for a more considerable step increases, the probability of 
+				sticking into some local minima for too long decreases, and overall we can observe a performance gain as we reduce the number of
+				generations to converge significantly
+				\begin{figure}[H]
+					\iftrue
+					\centering
+					\includegraphics[scale=0.4]{res/geneMutation.jpeg}
+					\fi
+				\end{figure}	
 				\begin{note}
 					The following results was produced with the following hyperparameters
 					\begin{itemize}
@@ -173,8 +246,26 @@
 						\end{center}
 						\caption{Balanced vs Elitistic(Uniform Mutation)}
 						\label{fig:sub2}
+					
 					\end{subfigure}
-					\caption{A}
+					\begin{subfigure}{.5\textwidth}
+						\centering
+						\begin{center}
+							\begin{tabular}{||c c c||} 
+								\hline
+								& Balanced Gaussian & Elitistic Uniform \\ [0.5ex] 
+								\hline\hline
+								$F_1$ & -6\% & +8\% \\ 
+								\hline
+								$F_4$ & +12\% & +22\% \\
+								\hline
+							\end{tabular}
+						\end{center}
+						\caption{Performance differences between the methods}
+						\label{fig:sub2}
+					\end{subfigure}
+					
+					\caption{Performance results on 10-Round averages}
 					\label{fig:test}
 				\end{figure}
 				
