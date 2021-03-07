@@ -38,6 +38,8 @@ The following command line parameters are supported
 | -dim   | Dimensions (N)       | Alters the default N (Genes per individual)            | int>0           | 4        | python2.7 ga-continuous-distrib.py -r -d -mr 0.2 -cr 0.8 -po 100 -ub 20 -lb -5 -fn sph -dim 8       |
 | -rt    | Simulations Number   | Alters the simulation number (returns averaged result) | int>0           | 1        | python2.7 ga-continuous-distrib.py -r -d -mr 0.2 -cr 0.8 -po 100 -ub 20 -lb -5 -fn mse -dim 8 -rt 3 |
 
+Important notice: Make sure that the function can be minimized in the given LB, UB. Otherwise, unavoidably, this program will stuck in an endless loop
+
 ### Functions supported
 The following functions are supported and accepted in -fn parameter
 
