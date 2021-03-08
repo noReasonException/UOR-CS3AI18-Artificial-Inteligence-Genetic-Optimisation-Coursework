@@ -15,8 +15,8 @@ GENES_PER_INDIVIDUAL=4  #Warning, always must be divisible by 2
 RUN_TIMES_AVG=1
 #Supported functions
 functions=[
-    ("sum1min","Sum of ones minimised",[0,1],lambda X: len(filter(lambda i:i==1,X)),lambda n:[0]*n),
-    ("sum1max", "Sum of ones maximised", [0, 1], lambda X: len(filter(lambda i: i == 1, X)), lambda n: [1] * n)
+    ("sum1min","Sum of ones minimised",[0,1],lambda X: len(filter(lambda i:i==1,X)),lambda n:[0]*n,lambda x:0),
+    ("sum1max", "Sum of ones maximised", [0, 1], lambda X: len(filter(lambda i: i == 1, X)), lambda n: [1] * n,lambda n:n)
 ]
 #Positions on supported functions
 FCODE=0
@@ -54,6 +54,8 @@ def diffsFromTarget(individual,functionDescriptor):
     target=functionDescriptor[FGENERATETARGET](GENES_PER_INDIVIDUAL)
     score=sum(map(lambda x:1 if x[0]!=x[1] else 0 ,zip(target,individual)))
     return score
+
+
 """
     returns a 2D list, each element of the form (FITNESS_SCORE,INDIVIDUAL). 
     The fitness score is relative to the population and is calculated using the fitIndividual function
