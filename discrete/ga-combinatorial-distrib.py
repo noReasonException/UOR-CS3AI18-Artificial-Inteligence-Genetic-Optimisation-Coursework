@@ -5,25 +5,25 @@ import numpy
 #Reasonable Defaults
 CROSSOVERRATE=0.8               #Probability of each individual to mate
 MUTATIONRATE=0.2                #Probability of each gene to be mutated
-POPULATION_SIZE=100
+POPULATION_SIZE=10
 
 
 
-GENES_PER_INDIVIDUAL=4  #Warning, always must be divisible by 2
+GENES_PER_INDIVIDUAL=20  #Warning, always must be divisible by 2
 
 
 RUN_TIMES_AVG=1
 #Supported functions
 functions=[
-    ("sum1min","Sum of ones minimised",[0,1],lambda X: len(filter(lambda i:i==1,X)),lambda n:[0]*n,lambda x:0),
-    ("sum1max", "Sum of ones maximised", [0, 1], lambda X: len(filter(lambda i: i == 1, X)), lambda n: [1] * n,lambda n:n)
+    ("sum1min","Sum of ones minimised",[0,1],lambda X: len(filter(lambda i:i==1,X)),lambda x:0),
+    ("sum1max", "Sum of ones maximised", [0, 1], lambda X: len(filter(lambda i: i == 1, X)),lambda n:n)
 ]
 #Positions on supported functions
 FCODE=0
 FDESCRIPTOR=1
 FSYMBOLS=2
 FFUNCTION=3
-FGENERATETARGET=4
+FGENERATETARGETFIT=4
 
 
 """
@@ -38,37 +38,21 @@ def createIndividual(symbols):
 """
 def createPopulation(populationSize,functionDescriptor):
     return [createIndividual(functionDescriptor[FSYMBOLS]) for _ in range(populationSize)]
-"""
-    How well the Individual fits within the given function?
-    This function returns a score equal with the number of equal genes between the individual and the target
-"""
-def fitIndividual(individual,functionDescriptor):
-    target=functionDescriptor[FGENERATETARGET](GENES_PER_INDIVIDUAL)
-    score=sum(map(lambda x:1 if x[0]==x[1] else 0 ,zip(target,individual)))
-    return score
-"""
-    How well the Individual fits within the given function?
-    This function returns a score equal with the number of differences between the individual and the target
-"""
-def diffsFromTarget(individual,functionDescriptor):
-    target=functionDescriptor[FGENERATETARGET](GENES_PER_INDIVIDUAL)
-    score=sum(map(lambda x:1 if x[0]!=x[1] else 0 ,zip(target,individual)))
-    return score
 
-
+def fitIndividualToTarget(individual,functionDescriptor):
+    a=functionDescriptor[FFUNCTION](individual)
+    b=functionDescriptor[FGENERATETARGETFIT](GENES_PER_INDIVIDUAL)
+    c=10
+    return abs(functionDescriptor[FFUNCTION](individual)-functionDescriptor[FGENERATETARGETFIT](GENES_PER_INDIVIDUAL))
 """
     returns a 2D list, each element of the form (FITNESS_SCORE,INDIVIDUAL). 
     The fitness score is relative to the population and is calculated using the fitIndividual function
 """
-def sortByFitness(population,functionDescriptor):
-    fitness = [(fitIndividual(i,functionDescriptor), i) for i in population]        #Fitness,individual pair
+def sortByFitness(population,functionDescriptor,rev=False):
+    fitness = [(fitIndividualToTarget(i,functionDescriptor), i) for i in population]        #Fitness,individual pair
     fitMax = sum(map(lambda x: abs(x[0]), fitness))                                 #Fitness max score
     fitness = map(lambda x: (abs(x[0]) / float(fitMax), x[1]), fitness)             #Percentage based on max score
-    best = sorted(fitness, key=lambda x: x[0], reverse=True)                        #Sort for max or min
-    return best
-def sortByDiffsFromTarget(population,functionDescriptor):
-    fitness = [(diffsFromTarget(i,functionDescriptor), i) for i in population]          #Fitness,individual pair
-    best = sorted(fitness, key=lambda x: x[0])                            #Sort for max or min
+    best = sorted(fitness, key=lambda x: x[0], reverse=rev)                        #Sort for max or min
     return best
 """
     Mutates a given gene with a probability determined by its second parameter, picking a random symbol from the pre-defined 
@@ -97,7 +81,7 @@ def mutatePopulaton(population,mutationRate,functioDescriptor):
 def survive(population,functionDescriptor):
     sortedPopulation = map(
         lambda x: x[1],                         #Discard the fitness percentage, we only want the individuals
-        sortByDiffsFromTarget(population,functionDescriptor)
+        sortByFitness(population,functionDescriptor)
     )
     return sortedPopulation[:POPULATION_SIZE]   #Survive the N Best individuals
 
@@ -155,20 +139,18 @@ def main(debug,present,functionDescriptor,runIndex,maxGen=250000):
 
 
     population= createPopulation(POPULATION_SIZE,functionDescriptor)
+
+
     curr_generation=0
     found=False
-
-
-
     while not found and curr_generation<maxGen:
         #Evaluation
         so=map(lambda x:x[1],sortByFitness(population,functionDescriptor))
-        if(diffsFromTarget(so[0],functionDescriptor)==0): #Perfect fit
+        if(fitIndividualToTarget(so[0],functionDescriptor)==0): #Perfect fit
             found=True
             if(present):
                 presentResults(curr_generation,so[0],functionDescriptor)
             return curr_generation
-
         #Select
         selected = elitisticSelect(population, functionDescriptor)
         #Mate
@@ -180,8 +162,9 @@ def main(debug,present,functionDescriptor,runIndex,maxGen=250000):
         population=survive(combined,functionDescriptor)
         curr_generation+=1
         if (debug):
-            print "[" + str(runIndex) + "]Generation " + str(curr_generation) + " Best With fit " + str(diffsFromTarget(so[0],functionDescriptor)) + " - " + str(so[0])
+            print "[" + str(runIndex) + "]Generation " + str(curr_generation) + " Best With fit " + str(fitIndividualToTarget(so[0],functionDescriptor)) + " - " + str(so[0])
     return curr_generation
+
 
 def presentResults(generations,optimal,functionDescriptor):
     print "Optimal:"\
