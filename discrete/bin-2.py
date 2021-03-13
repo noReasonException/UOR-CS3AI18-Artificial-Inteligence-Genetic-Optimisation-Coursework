@@ -8,7 +8,7 @@ from functools import reduce
 #Reasonable Defaults
 CROSSOVERRATE=0.8               #Probability of each individual to mate
 MUTATIONRATE=1                #Probability of each gene to be mutated
-POPULATION_SIZE=10000
+POPULATION_SIZE=100000
 
 
 
@@ -92,6 +92,15 @@ def mutateIndividual(individual,maxTries=150):
     assert validIndividual(individual) == True
     return individual
 
+
+def getBins(individual):
+    def append(x, y):
+        x.append(y)
+        return x
+    return reduce(lambda a, b: (append(a[0],a[1]), []) if b == 0 else (a[0],append(a[1],b)), individual, ([], []))[0]
+
+
+
 def mutatePopulation(p):
     return [mutateIndividual(every) for every in p]
 def survive(combined):
@@ -100,10 +109,11 @@ def survive(combined):
 def main(debug,present,runIndex,maxGen=50):
     print('complete code for a discrete optimization problem:')
 
-
     population=createInitialPopulation(POPULATION_SIZE)
+
     curr_generation=0
     found=False
+
     while not found and curr_generation<maxGen:
         #Evaluation
         so=sortByFitness(population)
@@ -115,28 +125,12 @@ def main(debug,present,runIndex,maxGen=50):
         mutated=mutatePopulation(population)
         combined=mutated+population
         population=survive(combined)
-        print "Best "+str(so[1]) +" with fit "+str(float(fitIndividual(so[0])))
-    return curr_generation
-
-
-    """
-    return curr_generation
-        #Select
-        #selected = elitisticSelect(population, functionDescriptor)
-        #Mate
-        #children=crossover(selected)
-        #Mutate
-        mutatedPopulation = mutatePopulation(population)
-        population=population+mutatedPopulation
-        #Survive
-        #combined=mutatedPopulation+population
-        #population=survive(combined,functionDescriptor)
-        #curr_generation+=1
         if (debug):
-            print "[" + str(runIndex) + "]Generation " + str(curr_generation) + " Best With fit " + str(fitIndividual(so[0])) + " - " + str(individualStr(so[0]))
-    return curr_generation
-"""
+            print "[" + str(runIndex) + "]Generation " + str(curr_generation) + " Best With fit " + str(
+                fitIndividual(so[0])) + " - " + str((getBins(so[0])))+" - "+str(so[0])
+        curr_generation+=1
 
+    return curr_generation
 
 
 

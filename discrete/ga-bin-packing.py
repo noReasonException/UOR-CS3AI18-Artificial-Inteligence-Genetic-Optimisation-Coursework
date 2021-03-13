@@ -1,5 +1,5 @@
-a=[1,2]
-b=a
-
-b[0]=20
-print a
+def append(x,y):
+    x.append(y)
+    return x
+a=[]
+print append(a,[12])
