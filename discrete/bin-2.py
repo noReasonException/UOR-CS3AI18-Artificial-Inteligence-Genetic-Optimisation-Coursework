@@ -9,7 +9,7 @@ import statistics
 #Reasonable Defaults
 CROSSOVERRATE=0.8               #Probability of each individual to mate
 MUTATIONRATE=1                #Probability of each gene to be mutated
-POPULATION_SIZE=1
+POPULATION_SIZE=10
 
 
 
@@ -29,18 +29,30 @@ def createInitialIndividual():
     random.shuffle(we)
     mid=map(lambda x:[x,0],we)
     return [j for i in mid for j in i]
+"""
+    The initial state is the worst state possible, every item in seperate bin
+"""
 def createInitialPopulation(n):
     return [createInitialIndividual() for _ in range(n)]
-
+"""
+    gives a greater fitness score in case a solution has a completely full bin
+"""
 def priotityIfCompletedBin(individual):
     PRIORITY_OFFSET=0.5
     return len(filter(lambda x:x==CAPACITY,binsSum(individual)))*PRIORITY_OFFSET
 
 """
     The 0s are the separators between bins, so len(0's)==bins
+    gives a priority score in case a solution has a full bin
 """
 def fitByBinsUsed(individual):
     return float(minimumBins())/len(filter(lambda x:x==0,individual)) + priotityIfCompletedBin(individual)
+
+"""
+    Return the number of full bins in an individual
+"""
+def getCompletedBins(individual):
+    return len(filter(lambda x: x == CAPACITY, binsSum(individual)))
 
 """
     Theoretical minimum of bins
@@ -48,13 +60,15 @@ def fitByBinsUsed(individual):
 def minimumBins():
     return math.ceil(sum(WEIGHTS)/CAPACITY)
 """
-    
+    Sorts by fitness, uses the fitByBinsUsed criterion defined above
 """
 def sortByFitness(population):
     fit=map(lambda x:(float(fitByBinsUsed(x)), x), population)
     best=sorted(fit,key=lambda x:x[0],reverse=True)
     return map(lambda x:x[1],best)
-
+"""
+    
+"""
 def validIndividual(individual):
     binsWeight=reduce(lambda a,b:(a[0]+[a[1]],0) if b==0 else (a[0],a[1]+b),individual,([],0))[0]
     overweightBins=sum(map(lambda x:0 if x<=CAPACITY else 1,binsWeight))
@@ -134,7 +148,7 @@ def main(debug,present,runIndex,maxGen=50):
     while not found and curr_generation<maxGen:
         #Evaluation
         so=sortByFitness(population)
-        if(fitByBinsUsed(so[0])==1): #if 1 then bins/min=1 and that mean bins=min. Perfect fit
+        if(getCompletedBins(so[0])==minimumBins()): #if 1 then bins/min=1 and that mean bins=min. Perfect fit
             found=True
             if(present):
                 presentResults(curr_generation,so[0])
