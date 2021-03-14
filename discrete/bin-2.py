@@ -5,10 +5,11 @@ import numpy
 import math
 import itertools
 from functools import reduce
+import statistics
 #Reasonable Defaults
 CROSSOVERRATE=0.8               #Probability of each individual to mate
 MUTATIONRATE=1                #Probability of each gene to be mutated
-POPULATION_SIZE=100000
+POPULATION_SIZE=1
 
 
 
@@ -30,11 +31,16 @@ def createInitialIndividual():
     return [j for i in mid for j in i]
 def createInitialPopulation(n):
     return [createInitialIndividual() for _ in range(n)]
+
+def priotityIfCompletedBin(individual):
+    PRIORITY_OFFSET=0.5
+    return len(filter(lambda x:x==CAPACITY,binsSum(individual)))*PRIORITY_OFFSET
+
 """
     The 0s are the separators between bins, so len(0's)==bins
 """
-def fitIndividual(individual):
-    return float(minimumBins())/len(filter(lambda x:x==0,individual))
+def fitByBinsUsed(individual):
+    return float(minimumBins())/len(filter(lambda x:x==0,individual)) + priotityIfCompletedBin(individual)
 
 """
     Theoretical minimum of bins
@@ -45,13 +51,13 @@ def minimumBins():
     
 """
 def sortByFitness(population):
-    fit=map(lambda x:(float(fitIndividual(x)),x),population)
+    fit=map(lambda x:(float(fitByBinsUsed(x)), x), population)
     best=sorted(fit,key=lambda x:x[0],reverse=True)
     return map(lambda x:x[1],best)
 
 def validIndividual(individual):
     binsWeight=reduce(lambda a,b:(a[0]+[a[1]],0) if b==0 else (a[0],a[1]+b),individual,([],0))[0]
-    overweightBins=sum(map(lambda x:0 if x<CAPACITY else 1,binsWeight))
+    overweightBins=sum(map(lambda x:0 if x<=CAPACITY else 1,binsWeight))
     emptyBins=sum(map(lambda x:0 if x!=0 else 1,binsWeight))
     return len(binsWeight)>0 and individual[len(individual)-1]==0 and individual[0]!=0 and overweightBins==0 and emptyBins==0
 
@@ -70,6 +76,12 @@ def removeEmptyBins(individual):
     while containsEmptyBins(individual)==True:
         individual=removeEmptyBinsOnce(individual)
     return individual
+
+def binsSum(individual):
+    bins=map(lambda x:sum(x),getBins(individual))
+    return bins
+
+
 
 
 def mutateIndividual(individual,maxTries=150):
@@ -92,6 +104,10 @@ def mutateIndividual(individual,maxTries=150):
     assert validIndividual(individual) == True
     return individual
 
+def mutateIndividualN(individual,n):
+    for i in range(n):
+        individual=mutateIndividual(individual)
+    return individual
 
 def getBins(individual):
     def append(x, y):
@@ -99,13 +115,14 @@ def getBins(individual):
         return x
     return reduce(lambda a, b: (append(a[0],a[1]), []) if b == 0 else (a[0],append(a[1],b)), individual, ([], []))[0]
 
-
-
+def getIndividual(bins):
+    return reduce(lambda a,b:a+b+[0],bins,[])
 def mutatePopulation(p):
-    return [mutateIndividual(every) for every in p]
+    return [mutateIndividualN(every,random.randint(3,8)) for every in p]
 def survive(combined):
     sort=sortByFitness(combined)
     return sort[:POPULATION_SIZE]
+
 def main(debug,present,runIndex,maxGen=50):
     print('complete code for a discrete optimization problem:')
 
@@ -117,7 +134,7 @@ def main(debug,present,runIndex,maxGen=50):
     while not found and curr_generation<maxGen:
         #Evaluation
         so=sortByFitness(population)
-        if(fitIndividual(so[0])==1): #if 1 then bins/min=1 and that mean bins=min. Perfect fit
+        if(fitByBinsUsed(so[0])==1): #if 1 then bins/min=1 and that mean bins=min. Perfect fit
             found=True
             if(present):
                 presentResults(curr_generation,so[0])
@@ -127,7 +144,7 @@ def main(debug,present,runIndex,maxGen=50):
         population=survive(combined)
         if (debug):
             print "[" + str(runIndex) + "]Generation " + str(curr_generation) + " Best With fit " + str(
-                fitIndividual(so[0])) + " - " + str((getBins(so[0])))+" - "+str(so[0])
+                fitByBinsUsed(so[0])) + " - " + str((getBins(so[0]))) + " - " + str(binsSum(so[0])) + " - "
         curr_generation+=1
 
     return curr_generation

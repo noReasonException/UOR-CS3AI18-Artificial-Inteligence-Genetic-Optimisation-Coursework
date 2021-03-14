@@ -1,5 +1,4 @@
-def append(x,y):
-    x.append(y)
-    return x
-a=[]
-print append(a,[12])
+a=[11]
+b=[12]
+
+print a+b+[0]
