@@ -7,17 +7,12 @@ import itertools
 from functools import reduce
 import statistics
 #Reasonable Defaults
-CROSSOVERRATE=0.8               #Probability of each individual to mate
 MUTATIONRATE=0.2                #Probability of each gene to be mutated
-POPULATION_SIZE=5
+POPULATION_SIZE=10
 
-
-
-GENES_PER_INDIVIDUAL=20  #Warning, always must be divisible by 2
 MAX_MUTATION_ATTEMPTS=3
 
-#WEIGHTS=[4, 8, 1, 4, 2, 1]
-WEIGHTS=[2, 5, 4, 7, 1, 3, 8]
+WEIGHTS=[4, 8, 1, 4, 2, 1]
 CAPACITY=10
 
 RUN_TIMES_AVG=5
@@ -180,12 +175,12 @@ def presentResults(typeof,generations,optimal):
           " Generations"\
           +" with MR="\
           +str(MUTATIONRATE)\
-          +", CR="\
-          +str(CROSSOVERRATE)\
           +", POPULATION="\
           +str(POPULATION_SIZE)\
-          +", N="\
-          +str(GENES_PER_INDIVIDUAL)\
+          +", CAPACITY="\
+          +str(CAPACITY)\
+          +", WEIGHTS="\
+          +str(WEIGHTS)
 
 if __name__ == '__main__':
     debug=False
@@ -197,9 +192,6 @@ if __name__ == '__main__':
     if("-mr" in sys.argv):
         MUTATIONRATE=float(sys.argv[sys.argv.index("-mr")+1])
         assert 0<=MUTATIONRATE<=1,"Probability of crossover cannot be outsize of bounds [0(0% crossover) - 1(100% crossover)]"
-    if ("-cr" in sys.argv):
-        CROSSOVERRATE = float(sys.argv[sys.argv.index("-cr") + 1])
-        assert 0 <= CROSSOVERRATE <= 1,"Probability of crossover cannot be outsize of bounds [0(0% crossover) - 1(100% crossover)]"
     if ("-po" in sys.argv):
         POPULATION_SIZE = int(sys.argv[sys.argv.index("-po") + 1])
         assert POPULATION_SIZE>=10 ,"Population size cannot be < 10"
@@ -207,6 +199,12 @@ if __name__ == '__main__':
         GENES_PER_INDIVIDUAL=int(sys.argv[sys.argv.index("-dim") + 1])
     if ("-rt" in sys.argv):
         RUN_TIMES_AVG = int(sys.argv[sys.argv.index("-rt") + 1])
+        assert RUN_TIMES_AVG>0
+    if ("-bc" in sys.argv):
+        CAPACITY = int(sys.argv[sys.argv.index("-bc") + 1])
+        assert RUN_TIMES_AVG>0
+    if ("-we" in sys.argv):
+        WEIGHTS = list(map(lambda x:int(x),sys.argv[sys.argv.index("-we") + 1].split(",")))
         assert RUN_TIMES_AVG>0
 
 
